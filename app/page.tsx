@@ -45,8 +45,9 @@ export default async function Home() {
 
       if (error) errorMessage = error.message;
       videos = (data ?? []) as VideoRow[];
-    } catch (e: any) {
-      errorMessage = e?.message ?? "Unknown error fetching videos.";
+    } catch (e: unknown) {
+      errorMessage =
+        e instanceof Error ? e.message : "Unknown error fetching videos.";
     }
   }
 
@@ -61,7 +62,7 @@ export default async function Home() {
             </span>
             <span className="font-semibold">HoopSpark</span>
           </div>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
             <Link href="/help" className="btn btn-outline">
               Help
             </Link>
@@ -156,6 +157,7 @@ export default async function Home() {
     </main>
   );
 }
+
 
 
 
