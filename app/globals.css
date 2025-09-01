@@ -1,38 +1,202 @@
 @import "tailwindcss";
+/* Figma font (can switch to next/font later for performance) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-/* Base color variables */
+/* -------------------------
+   Design tokens (light)
+------------------------- */
 :root {
+  --font-size: 14px;
+
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: oklch(0.145 0 0);
 
-  /* HoopSpark brand colors */
-  --brand-50:  #FFF6EF;
-  --brand-100: #FFE7D6;
-  --brand-200: #FFC9A8;
-  --brand-300: #FFAA79;
-  --brand-400: #FF8C4B;
-  --brand-500: #FF7A1A; /* primary orange */
-  --brand-600: #E86B12;
-  --brand-700: #B7530E;
-  --brand-800: #8A3E0B;
-  --brand-900: #5E2A07;
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
 
-  --app-50:  #F3F7FF;
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  --primary: #2979FF;              /* Figma primary (blue) */
+  --primary-foreground: #ffffff;
+
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+
+  --ring: #2979FF;
+
+  /* Charts (from Figma) */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  --radius: 0.625rem;
+
+  /* Figma orange (marketing) */
+  --orange: #FF6B35;
+  --orange-foreground: #ffffff;
+
+  /* Sidebar */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* ---- Extra: brand/app scales used in your components ---- */
+  /* Brand = Orange scale */
+  --brand-50:  #FFF4EE;
+  --brand-100: #FFE4D6;
+  --brand-200: #FFCCB8;
+  --brand-300: #FFB091;
+  --brand-400: #FF8E63;
+  --brand-500: var(--orange);
+  --brand-600: #E95F2E;
+  --brand-700: #C84E24;
+  --brand-800: #9F3F1E;
+  --brand-900: #6F2B14;
+
+  /* App = Blue scale (centered on Figma primary) */
+  --app-50:  #F2F7FF;
   --app-100: #E6EFFF;
-  --app-200: #C6DAFF;
-  --app-300: #9FC0FF;
-  --app-400: #6F9FFF;
-  --app-500: #3B82F6; /* primary blue */
-  --app-600: #2563EB;
-  --app-700: #1D4ED8;
-  --app-800: #1E40AF;
-  --app-900: #1E3A8A;
+  --app-200: #CFE0FF;
+  --app-300: #AFCBFF;
+  --app-400: #6FA3FF;
+  --app-500: var(--primary);
+  --app-600: #1F6EF5;
+  --app-700: #1C5CE0;
+  --app-800: #1A4AB8;
+  --app-900: #163A8F;
 }
 
+/* -------------------------
+   Design tokens (dark)
+------------------------- */
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: #2979FF;
+  --primary-foreground: #ffffff;
+
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  --orange: #FF6B35;
+  --orange-foreground: #ffffff;
+
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+/* -------------------------
+   Map tokens to Tailwind v4
+------------------------- */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-orange: var(--orange);
+  --color-orange-foreground: var(--orange-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Your existing semantic scales */
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
@@ -54,25 +218,31 @@
   --color-app-700: var(--app-700);
   --color-app-800: var(--app-800);
   --color-app-900: var(--app-900);
-
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* -------------------------
+   Base + typography
+------------------------- */
+@layer base {
+  * { @apply border-border outline-ring/50; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Montserrat', sans-serif;
+    font-size: var(--font-size);
   }
+
+  /* Simpler, robust typography (no custom size vars needed) */
+  h1 { font-size: 2rem; line-height: 1.3; font-weight: 600; }
+  h2 { font-size: 1.5rem; line-height: 1.35; font-weight: 600; }
+  h3 { font-size: 1.25rem; line-height: 1.4; font-weight: 600; }
+  h4 { font-size: 1rem; line-height: 1.45; font-weight: 600; }
+  p, label, button, input { font-size: 1rem; line-height: 1.5; }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
-}
-
-/* --- HoopSpark semantic components --- */
+/* -------------------------
+   Semantic components (matches your pages)
+------------------------- */
 @layer components {
   .container-content { @apply mx-auto max-w-7xl px-6; }
 
@@ -83,7 +253,7 @@ body {
   .btn-outline { @apply border hover:bg-gray-50 dark:hover:bg-gray-900; }
 
   /* Cards */
-  .card { @apply rounded-2xl border shadow bg-white dark:bg-gray-950; }
+  .card { @apply rounded-2xl border shadow bg-card text-card-foreground; }
   .card-pad { @apply p-5 md:p-6; }
 
   /* Badges */
@@ -92,5 +262,26 @@ body {
   .badge-brand { @apply bg-brand-100 text-brand-700; }
   .badge-blue { @apply bg-app-100 text-app-700; }
 }
+
+/* -------------------------
+   Scrollbars (from Figma)
+------------------------- */
+.scrollbar-thin { scrollbar-width: thin; }
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background-color: var(--color-border); border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: var(--color-muted-foreground); }
+
+.modal-scroll { scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
+.modal-scroll::-webkit-scrollbar { width: 4px; }
+.modal-scroll::-webkit-scrollbar-track { background: transparent; border-radius: 2px; }
+.modal-scroll::-webkit-scrollbar-thumb { background-color: var(--color-muted-foreground); border-radius: 2px; }
+.modal-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--color-primary); }
+
+/* Dialog max height */
+[data-slot="dialog-content"] { max-height: 90vh; display: flex; flex-direction: column; }
+@media (max-height: 600px) { [data-slot="dialog-content"] { max-height: 95vh; padding: 1rem; } }
+@media (max-height: 500px) { [data-slot="dialog-content"] { max-height: 98vh; padding: 0.75rem; } }
+
 
 
