@@ -1,13 +1,60 @@
 @import "tailwindcss";
 
+/* Base color variables */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* HoopSpark brand colors */
+  --brand-50:  #FFF6EF;
+  --brand-100: #FFE7D6;
+  --brand-200: #FFC9A8;
+  --brand-300: #FFAA79;
+  --brand-400: #FF8C4B;
+  --brand-500: #FF7A1A; /* primary orange */
+  --brand-600: #E86B12;
+  --brand-700: #B7530E;
+  --brand-800: #8A3E0B;
+  --brand-900: #5E2A07;
+
+  --app-50:  #F3F7FF;
+  --app-100: #E6EFFF;
+  --app-200: #C6DAFF;
+  --app-300: #9FC0FF;
+  --app-400: #6F9FFF;
+  --app-500: #3B82F6; /* primary blue */
+  --app-600: #2563EB;
+  --app-700: #1D4ED8;
+  --app-800: #1E40AF;
+  --app-900: #1E3A8A;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+
+  --color-app-50: var(--app-50);
+  --color-app-100: var(--app-100);
+  --color-app-200: var(--app-200);
+  --color-app-300: var(--app-300);
+  --color-app-400: var(--app-400);
+  --color-app-500: var(--app-500);
+  --color-app-600: var(--app-600);
+  --color-app-700: var(--app-700);
+  --color-app-800: var(--app-800);
+  --color-app-900: var(--app-900);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -22,5 +69,28 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
 }
+
+/* --- HoopSpark semantic components --- */
+@layer components {
+  .container-content { @apply mx-auto max-w-7xl px-6; }
+
+  /* Buttons */
+  .btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition; }
+  .btn-primary { @apply bg-brand-500 text-white hover:brightness-110 active:brightness-95 shadow; }
+  .btn-primary-blue { @apply bg-app-500 text-white hover:brightness-110 active:brightness-95 shadow; }
+  .btn-outline { @apply border hover:bg-gray-50 dark:hover:bg-gray-900; }
+
+  /* Cards */
+  .card { @apply rounded-2xl border shadow bg-white dark:bg-gray-950; }
+  .card-pad { @apply p-5 md:p-6; }
+
+  /* Badges */
+  .badge { @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold; }
+  .badge-muted { @apply bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200; }
+  .badge-brand { @apply bg-brand-100 text-brand-700; }
+  .badge-blue { @apply bg-app-100 text-app-700; }
+}
+
+
