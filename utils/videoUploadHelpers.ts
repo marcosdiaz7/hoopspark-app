@@ -105,9 +105,10 @@ export async function extractThumbnail(
   return blob;
 }
 
-/** Generate a storage path (keeps extension). */
-export function storagePathFor(prefix: "videos" | "thumbnails", file: File) {
+/** Generate a storage key INSIDE a bucket, scoped by userId (keeps extension). */
+export function storagePathFor(userId: string, file: File) {
   const ext = file.name.split(".").pop() || "bin";
   const safeBase = file.name.replace(/\s+/g, "_").replace(/[^\w.-]/g, "");
-  return `${prefix}/${Date.now()}_${safeBase}.${ext}`;
+  // IMPORTANT: first segment must be the userId to satisfy storage RLS
+  return `${userId}/${crypto.randomUUID()}_${safeBase}.${ext}`;
 }
