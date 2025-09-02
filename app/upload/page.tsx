@@ -154,12 +154,13 @@ export default function UploadPage() {
       setStatus({ type: "ok", msg: "Upload complete and analysis created." });
       setFile(null);
       setSkill("");
-    } catch (err: any) {
-      console.error(err);
-      setStatus({ type: "err", msg: err?.message || "Upload failed." });
-    } finally {
-      setLoading(false);
-    }
+   } catch (err: unknown) {
+    console.error(err);
+    const msg = err instanceof Error ? err.message : String(err ?? "Upload failed.");
+    setStatus({ type: "err", msg });
+  } finally {
+    setLoading(false);
+  }
   }
 
   return (
