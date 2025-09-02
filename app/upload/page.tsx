@@ -11,6 +11,8 @@ type Status = { type: "ok" | "err"; msg: string } | null;
 
 const VIDEO_BUCKET = process.env.NEXT_PUBLIC_VIDEO_BUCKET || "videos";
 const THUMB_BUCKET = process.env.NEXT_PUBLIC_THUMB_BUCKET || "thumbnails";
+const FEEDBACK_URL =
+  process.env.NEXT_PUBLIC_FEEDBACK_URL || "https://hoopspark.ai/feedback";
 
 // helper: create a user-scoped storage key that satisfies storage RLS
 function userScopedKey(userId: string, fileName: string) {
@@ -130,7 +132,6 @@ export default function UploadPage() {
       if (insErr) throw insErr;
 
       // 4) QUICK ANALYSIS NOW → write to feedback (client-side, respects RLS)
-      //    (This guarantees you see an analysis right away. Replace with your Edge Function later.)
       const qa = computeQuickAnalysis(skill, result.meta?.duration);
       const { error: fbErr } = await supabase.from("feedback").insert([{
         id: crypto.randomUUID(),
@@ -154,20 +155,31 @@ export default function UploadPage() {
       setStatus({ type: "ok", msg: "Upload complete and analysis created." });
       setFile(null);
       setSkill("");
-   } catch (err: unknown) {
-    console.error(err);
-    const msg = err instanceof Error ? err.message : String(err ?? "Upload failed.");
-    setStatus({ type: "err", msg });
-  } finally {
-    setLoading(false);
-  }
+    } catch (err: unknown) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : String(err ?? "Upload failed.");
+      setStatus({ type: "err", msg });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <main className="container-content py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Upload a Clip</h1>
-        <Link href="/" className="btn btn-outline">Back to Videos</Link>
+        <div className="flex items-center gap-2">
+          {/* Send Feedback (opens Tally) */}
+          <a
+            href={FEEDBACK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary"
+          >
+            Send Feedback
+          </a>
+          <Link href="/" className="btn btn-outline">Back to Videos</Link>
+        </div>
       </div>
 
       <form onSubmit={onSubmit} className="card card-pad mt-6 space-y-4 max-w-2xl">
@@ -244,6 +256,7 @@ export default function UploadPage() {
     </main>
   );
 }
+
 
 
 
