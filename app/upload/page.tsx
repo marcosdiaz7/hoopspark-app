@@ -20,27 +20,6 @@ function userScopedKey(userId: string, fileName: string) {
   return `${userId}/${crypto.randomUUID()}_${safe}`;
 }
 
-// super-simple placeholder "analysis" so you can see feedback immediately.
-// (Swap to your Edge Function later.)
-function computeQuickAnalysis(skill: string, durationSec?: number) {
-  const base = 7.2 + (Math.min(durationSec || 0, 60) / 60) * 1.0; // 7.2 - 8.2
-  const score = Math.min(9.4, Math.max(6.5, Number(base.toFixed(1))));
-  const area = skill || "General";
-  const issues =
-    area.toLowerCase().includes("shoot")
-      ? ["Inconsistent release point", "Flat arc on longer shots"]
-      : area.toLowerCase().includes("handle")
-      ? ["High dribble at speed", "Loose off-hand on crossovers"]
-      : ["Footwork drifts left", "Low stance breaks late on defense"];
-  const suggestions =
-    area.toLowerCase().includes("shoot")
-      ? "Add 3×(10 makes) form shooting sets from 5 spots; finish with 25 free throws tracking arc."
-      : area.toLowerCase().includes("handle")
-      ? "Do 3×30s pound-cross and in-out reps, then zig-zag cones focusing on low hips and eyes up."
-      : "Mikan series 3×30s, defensive slides 3×25y with consistent hip height, plant foot cues on finishes.";
-  return { score, skill_area: area, issues, suggestions, ai_response: `Auto analysis (${area})` };
-}
-
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [skill, setSkill] = useState("");
@@ -131,26 +110,24 @@ export default function UploadPage() {
       const { error: insErr } = await supabase.from("videos").insert([payload]);
       if (insErr) throw insErr;
 
-      // 4) QUICK ANALYSIS NOW → write to feedback (client-side, respects RLS)
-      const qa = computeQuickAnalysis(skill, result.meta?.duration);
-      const { error: fbErr } = await supabase.from("feedback").insert([{
-        id: crypto.randomUUID(),
-        user_id: userId,
-        video_id: videoId,
-        score: qa.score,
-        skill_area: qa.skill_area,
-        issues: qa.issues,           // text[]
-        suggestions: qa.suggestions,
-        ai_response: qa.ai_response,
-        created_at: new Date().toISOString()
-      }]);
-      if (fbErr) throw fbErr;
+      // 4) Real analysis via Edge Function (runs as the signed-in user)
+      const { data: fnData, error: fnErr } = await supabase.functions.invoke("analyze-video", {
+        body: {
+          videoId,
+          bucket: VIDEO_BUCKET,
+          key: videoKey,
+          skillFocus: skill || null,
+          // questionnaire: { self_rating: 7, focus: skill || 'General' } // optional later
+        },
+      });
+      if (fnErr) throw fnErr;
 
-      // update video status to analyzed (nice for your list page)
-      await supabase.from("videos").update({ status: "analyzed" }).eq("id", videoId);
-
-      // show analysis inline
-      setAnalysis({ score: qa.score, skill_area: qa.skill_area, issues: qa.issues, suggestions: qa.suggestions });
+      if (fnData?.analysis) {
+        const a = fnData.analysis as {
+          score: number; skill_area: string; issues: string[]; suggestions: string;
+        };
+        setAnalysis(a);
+      }
 
       setStatus({ type: "ok", msg: "Upload complete and analysis created." });
       setFile(null);
@@ -251,11 +228,12 @@ export default function UploadPage() {
       )}
 
       <p className="mt-6 text-xs text-gray-500">
-        Buckets used: <b>{VIDEO_BUCKET}</b> and <b>{THUMB_BUCKET}</b> (Private). We store the storage path and create a feedback record immediately.
+        Buckets used: <b>{VIDEO_BUCKET}</b> and <b>{THUMB_BUCKET}</b> (Private). We store the storage path and call an Edge Function to create a feedback record.
       </p>
     </main>
   );
 }
+
 
 
 
