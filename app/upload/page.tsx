@@ -310,7 +310,7 @@ export default function UploadPage() {
                 type="button"
                 onClick={() => saveReaction("up")}
                 disabled={savingReact || !lastVideoId}
-                className="btn btn-secondary"
+                className="btn btn-outline hover:bg-green-50 hover:border-green-300"
               >
                 👍 Helpful
               </button>
@@ -318,7 +318,7 @@ export default function UploadPage() {
                 type="button"
                 onClick={() => saveReaction("down")}
                 disabled={savingReact || !lastVideoId}
-                className="btn btn-outline"
+                className="btn btn-outline hover:bg-rose-50 hover:border-rose-300"
               >
                 👎 Off
               </button>
