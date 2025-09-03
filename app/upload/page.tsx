@@ -155,7 +155,7 @@ export default function UploadPage() {
           >
             Send Feedback
           </a>
-          <Link href="/" className="btn btn-outline">Back to Videos</Link>
+          <Link href="/videos" className="btn btn-outline">Back to Videos</Link>
         </div>
       </div>
 
