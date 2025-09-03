@@ -28,13 +28,20 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(false);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
 
-  // to show the analysis inline
+  // inline analysis card
   const [analysis, setAnalysis] = useState<{
     score: number;
     skill_area: string;
     issues: string[];
     suggestions: string;
   } | null>(null);
+
+  // track last created video for reactions
+  const [lastVideoId, setLastVideoId] = useState<string | null>(null);
+
+  // reaction UI
+  const [userNote, setUserNote] = useState("");
+  const [savingReact, setSavingReact] = useState(false);
 
   async function handlePreview(f: File | null) {
     setThumbPreview(null);
@@ -49,6 +56,7 @@ export default function UploadPage() {
     e.preventDefault();
     setStatus(null);
     setAnalysis(null);
+    setLastVideoId(null);
 
     // Require skill focus
     const focus = skill.trim();
@@ -111,11 +119,12 @@ export default function UploadPage() {
         bucket_name: VIDEO_BUCKET,
         file_size: file.size,
         uploaded_at: new Date().toISOString(),
-        skill_focus: focus, // now required
+        skill_focus: focus, // required
         status: "uploaded",
       };
       const { error: insErr } = await supabase.from("videos").insert([payload]);
       if (insErr) throw insErr;
+      setLastVideoId(videoId);
 
       // 4) Real analysis via Edge Function (runs as the signed-in user)
       const { data: fnData, error: fnErr } = await supabase.functions.invoke("analyze-video", {
@@ -125,9 +134,7 @@ export default function UploadPage() {
           key: videoKey,
           skillFocus: focus,
           questionnaire:
-            selfRating == null
-              ? undefined
-              : { self_rating: selfRating, focus },
+            selfRating == null ? undefined : { self_rating: selfRating, focus },
         },
       });
       if (fnErr) throw fnErr;
@@ -143,12 +150,53 @@ export default function UploadPage() {
       setFile(null);
       setSkill("");
       setSelfRating(null);
+      setUserNote("");
     } catch (err: unknown) {
       console.error(err);
       const msg = err instanceof Error ? err.message : String(err ?? "Upload failed.");
       setStatus({ type: "err", msg });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function saveReaction(kind: "up" | "down") {
+    if (!lastVideoId) return;
+    try {
+      setSavingReact(true);
+
+      // get the most recent feedback row for this video
+      const { data: fbRow, error: selErr } = await supabase
+        .from("feedback")
+        .select("id, questionnaire_data")
+        .eq("video_id", lastVideoId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (selErr) throw selErr;
+      if (!fbRow?.id) throw new Error("No feedback found to update.");
+
+      // merge reaction + optional note into questionnaire_data
+      const merged: Record<string, unknown> = {
+        ...(fbRow.questionnaire_data ?? {}),
+        user_reaction: kind,
+        ...(userNote.trim() ? { user_note: userNote.trim() } : {}),
+      };
+
+      const { error: updErr } = await supabase
+        .from("feedback")
+        .update({ questionnaire_data: merged })
+        .eq("id", fbRow.id);
+
+      if (updErr) throw updErr;
+
+      setStatus({ type: "ok", msg: "Thanks for the feedback!" });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setStatus({ type: "err", msg: `Could not save reaction: ${msg}` });
+    } finally {
+      setSavingReact(false);
     }
   }
 
@@ -237,7 +285,7 @@ export default function UploadPage() {
         )}
       </form>
 
-      {/* Inline analysis card */}
+      {/* Inline analysis + reactions */}
       {analysis && (
         <div className="card card-pad max-w-2xl mt-6">
           <h2 className="font-semibold text-lg">AI Analysis</h2>
@@ -253,6 +301,42 @@ export default function UploadPage() {
             <b>Suggestions:</b>
             <p className="text-sm">{analysis.suggestions}</p>
           </div>
+
+          {/* Quick reaction UI */}
+          <div className="mt-4 border-t pt-4">
+            <p className="text-sm font-medium mb-2">Was this helpful?</p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => saveReaction("up")}
+                disabled={savingReact || !lastVideoId}
+                className="btn btn-secondary"
+              >
+                👍 Helpful
+              </button>
+              <button
+                type="button"
+                onClick={() => saveReaction("down")}
+                disabled={savingReact || !lastVideoId}
+                className="btn btn-outline"
+              >
+                👎 Off
+              </button>
+            </div>
+            <div className="mt-3">
+              <label className="block text-sm text-gray-600 mb-1">Add a quick note (optional)</label>
+              <textarea
+                value={userNote}
+                onChange={(e) => setUserNote(e.target.value)}
+                rows={3}
+                className="w-full rounded-lg border p-2"
+                placeholder="Tell us what felt off or what helped…"
+              />
+              <div className="mt-2 text-xs text-gray-500">
+                Your reaction + note get saved with this analysis.
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -262,6 +346,7 @@ export default function UploadPage() {
     </main>
   );
 }
+
 
 
 
