@@ -23,6 +23,7 @@ function userScopedKey(userId: string, fileName: string) {
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [skill, setSkill] = useState("");
+  const [selfRating, setSelfRating] = useState<number | null>(null);
   const [status, setStatus] = useState<Status>(null);
   const [loading, setLoading] = useState(false);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
@@ -48,6 +49,13 @@ export default function UploadPage() {
     e.preventDefault();
     setStatus(null);
     setAnalysis(null);
+
+    // Require skill focus
+    const focus = skill.trim();
+    if (!focus) {
+      setStatus({ type: "err", msg: "Please enter a Skill focus." });
+      return;
+    }
 
     // Must be signed in for RLS/Storage policies
     const { data: userResp, error: userErr } = await supabase.auth.getUser();
@@ -88,7 +96,6 @@ export default function UploadPage() {
           cacheControl: "3600",
           upsert: false,
         });
-        // show preview if we made one successfully
         const { data: t } = await supabase.storage.from(THUMB_BUCKET).createSignedUrl(thumbKey, 60 * 60);
         if (t?.signedUrl) setThumbPreview(t.signedUrl);
       } catch {}
@@ -104,7 +111,7 @@ export default function UploadPage() {
         bucket_name: VIDEO_BUCKET,
         file_size: file.size,
         uploaded_at: new Date().toISOString(),
-        skill_focus: skill || null,
+        skill_focus: focus, // now required
         status: "uploaded",
       };
       const { error: insErr } = await supabase.from("videos").insert([payload]);
@@ -116,8 +123,11 @@ export default function UploadPage() {
           videoId,
           bucket: VIDEO_BUCKET,
           key: videoKey,
-          skillFocus: skill || null,
-          // questionnaire: { self_rating: 7, focus: skill || 'General' } // optional later
+          skillFocus: focus,
+          questionnaire:
+            selfRating == null
+              ? undefined
+              : { self_rating: selfRating, focus },
         },
       });
       if (fnErr) throw fnErr;
@@ -132,6 +142,7 @@ export default function UploadPage() {
       setStatus({ type: "ok", msg: "Upload complete and analysis created." });
       setFile(null);
       setSkill("");
+      setSelfRating(null);
     } catch (err: unknown) {
       console.error(err);
       const msg = err instanceof Error ? err.message : String(err ?? "Upload failed.");
@@ -146,7 +157,6 @@ export default function UploadPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Upload a Clip</h1>
         <div className="flex items-center gap-2">
-          {/* Send Feedback (opens Tally) */}
           <a
             href={FEEDBACK_URL}
             target="_blank"
@@ -175,6 +185,7 @@ export default function UploadPage() {
               await handlePreview(f);
             }}
             className="mt-1 block w-full rounded-lg border p-2"
+            required
           />
         </div>
 
@@ -187,14 +198,32 @@ export default function UploadPage() {
         )}
 
         <div>
-          <label className="block text-sm font-medium">Skill focus (optional)</label>
+          <label className="block text-sm font-medium">Skill focus (required)</label>
           <input
             type="text"
             placeholder="Shooting, Ball Handling, Defense…"
             value={skill}
             onChange={(e) => setSkill(e.target.value)}
             className="mt-1 block w-full rounded-lg border p-2"
+            required
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">How do you think you did? (0–10)</label>
+          <input
+            type="number"
+            min={0}
+            max={10}
+            step={0.5}
+            value={selfRating ?? ""}
+            onChange={(e) => setSelfRating(e.target.value === "" ? null : Number(e.target.value))}
+            className="mt-1 block w-full rounded-lg border p-2"
+            placeholder="e.g., 7.5"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Optional. Your self-rating nudges the AI score.
+          </p>
         </div>
 
         <button disabled={loading} className="btn btn-primary">
@@ -233,6 +262,7 @@ export default function UploadPage() {
     </main>
   );
 }
+
 
 
 
