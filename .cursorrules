@@ -1,0 +1,12 @@
+# Project guardrails (HoopSpark)
+- Keep `tsconfig.json` excluding "supabase/**".
+- Never commit `.env*` or secrets. `NEXT_PUBLIC_*` only on client.
+- Edge Functions live in `supabase/functions/**` (Deno).
+- Storage keys must start with `{auth.uid()}/...`.
+- RLS: `videos.user_id = auth.uid()` and `feedback.user_id = auth.uid()`.
+- Buckets are Private; use signed URLs for playback.
+- Next.js App Router + TypeScript + Tailwind. Avoid `any`.
+- Upload page: required Skill focus, optional self-rating, store storage key (not public URL), create feedback via Edge Function, set videos.status=analyzed.
+- History: newest first; sign URLs on render.
+- Reactions: save questionnaire_data.user_reaction and optional user_note.
+- CI/CD: Vercel builds app; GitHub Action deploys functions.
